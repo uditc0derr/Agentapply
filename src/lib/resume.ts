@@ -80,6 +80,21 @@ export function getCachedResumeText(): string {
   return metaStore().get("resumeText") ?? "";
 }
 
+/** Returns cached resume text, lazily re-extracting after a server restart. */
+export async function getResumeText(): Promise<string> {
+  const cached = metaStore().get("resumeText");
+  if (cached) return cached;
+  const file = getResumeFile();
+  if (!file) return "";
+  try {
+    const text = await extractResumeText(file.path);
+    metaStore().set("resumeText", text.slice(0, 20000));
+    return text;
+  } catch {
+    return "";
+  }
+}
+
 export function deleteResume() {
   for (const f of listResumeFiles()) fs.rmSync(resumePath(f), { force: true });
   metaStore().clear();

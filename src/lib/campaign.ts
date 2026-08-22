@@ -7,7 +7,7 @@ import {
   setStatus,
 } from "./db";
 import { generateEmail, templateEmail } from "./generator";
-import { getResumeFile, getCachedResumeText } from "./resume";
+import { getResumeFile, getResumeText } from "./resume";
 import { getTransporter, sendApplicationEmail } from "./mailer";
 
 interface RunnerState {
@@ -44,7 +44,7 @@ async function processOne(id: number, dryRun: boolean): Promise<"sent" | "draft"
         ? await generateEmail(
             app,
             settings,
-            getCachedResumeText(),
+            await getResumeText(),
             resume?.filename ?? ""
           )
         : templateEmail(app, settings);
@@ -80,6 +80,7 @@ async function processOne(id: number, dryRun: boolean): Promise<"sent" | "draft"
       attachmentName: resume.filename,
     });
 
+    setStatus(id, "sent", { sent_at: new Date().toISOString(), error: "" });
     return "sent";
   } catch (err) {
     const message =

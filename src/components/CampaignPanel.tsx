@@ -168,6 +168,20 @@ export default function CampaignPanel({
                           View email
                         </button>
                       )}
+                      {["generating", "sending"].includes(a.status) && !running && (
+                        <>
+                          <button className={btnGhost + " mr-2 !px-2 !py-0.5 !text-xs"}
+                            title="Email actually went out — record it as sent"
+                            onClick={() => void api(`/api/recipients/${a.id}/retry`, { method: "POST", body: JSON.stringify({ markSent: true }) }).then(onChanged)}>
+                            Mark sent
+                          </button>
+                          <button className={btnGhost + " !px-2 !py-0.5 !text-xs"}
+                            title="Not sure it was sent — generate and send again"
+                            onClick={() => void api(`/api/recipients/${a.id}/retry`, { method: "POST" }).then(onChanged)}>
+                            Requeue
+                          </button>
+                        </>
+                      )}
                       {a.status === "failed" && !running && (
                         <button className={btnGhost + " !px-2 !py-0.5 !text-xs"}
                           onClick={() => void api(`/api/recipients/${a.id}/retry`, { method: "POST" }).then(onChanged)}>
